@@ -5,6 +5,8 @@ go 1.23
 toolchain go1.23.11
 
 require (
+	github.com/aws/aws-lambda-go v1.47.0
+	github.com/awslabs/aws-lambda-go-api-proxy v0.16.2
 	github.com/gin-gonic/gin v1.10.1
 	github.com/joho/godotenv v1.5.1
 	github.com/sashabaranov/go-openai v1.36.0

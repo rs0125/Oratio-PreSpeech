@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: PreSpeech Layer API - Serverless Application
+
+Globals:
+  Function:
+    Timeout: 300  # 5 minutes for GPT API calls
+    MemorySize: 512
+    Runtime: provided.al2023
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        OPENAI_API_KEY: !Ref OpenAIApiKey
+        SUPABASE_URL: !Ref SupabaseUrl
+        SUPABASE_KEY: !Ref SupabaseKey
+        GIN_MODE: release
+
+Parameters:
+  OpenAIApiKey:
+    Type: String
+    Description: OpenAI API Key
+    NoEcho: true
+  
+  SupabaseUrl:
+    Type: String
+    Description: Supabase Database URL
+  
+  SupabaseKey:
+    Type: String
+    Description: Supabase API Key
+    NoEcho: true
+
+Resources:
+  PreSpeechLayerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: PreSpeechLayer
+      CodeUri: ./
+      Handler: bootstrap
+      Description: PreSpeech Layer API Handler
+      Events:
+        GenerateSession:
+          Type: Api
+          Properties:
+            Path: /generate
+            Method: POST
+        GetSession:
+          Type: Api
+          Properties:
+            Path: /session
+            Method: GET
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+
+  # Application Log Group
+  PreSpeechLayerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PreSpeechLayerFunction}
+      RetentionInDays: 7
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  
+  FunctionArn:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt PreSpeechLayerFunction.Arn
+  
+  FunctionName:
+    Description: "Lambda Function Name"
+    Value: !Ref PreSpeechLayerFunction
